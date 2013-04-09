@@ -5,37 +5,39 @@ module Resque
     module Bundle
 
       class Installer
-        attr_accessor :dependencies, :common_dependencies, :default_dependencies
+        attr_accessor :dependencies, :common_dependencies, :default_dependencies, 
+                      :src_cache_path, :namespace
 
         def initialize(config)
-          src_cache_path = config[:folder]
-          FileUtils.mkdir_p src_cache_path
+          self.src_cache_path = Pathname.new(config[:folder])
+          FileUtils.mkdir_p src_cache_path.to_s
 
           #TODO: 
-          md5 = "TODO_MD5" #@feature
-          feature_cache_path = File.join src_cache_path, md5
-          FileUtils.mkdir_p feature_cache_path
+          md5 = "TODO_MD5" #MD5.hexdigest(config[:gherkin])
+          feature_cache_path = src_cache_path+md5
+          FileUtils.mkdir_p feature_cache_path.to_s
 
           self.common_dependencies = config[:common_dependencies] || []
           self.default_dependencies = config[:default_dependencies] || ["COMMON"]
         end
 
         def install
-          #before_perform_bundle
-          dependencies = replace_common(dependencies || default_dependencies)
-          validate_dependencies(dependencies)
-          do_install(dependencies)
+          d = replace_common(dependencies || default_dependencies)
+          validate_dependencies(d)
+          #raise d.inspect
+          do_install(d)
         ensure
           cleanup_install
-          #after_perform_bundle
         end
 
+        #TODO: use folder and namespace
         def do_install(dependencies)
-          p = Pathname.new("/tmp/username/#{rand(1000000)}") #TODO: use folder and user-name
-          FileUtils.mkdir_p(p)
+          p = src_cache_path+"#{namespace || "namespace"}/#{rand(1000000)}"
+          FileUtils.mkdir_p(p.to_s)
       
           sources = [Bundler::Source::Rubygems.new("remotes" => ["http://gems.github.com"])]
           deps = dependencies.collect do |name|
+            #TODO: fragile split. Does Bundler have an internal utility?
             name, version = name.split("=>")
             sources.unshift Bundler::Source::Git.new("uri"=>name, "git"=>name)
             Bundler::Dependency.new repo_name(name), version

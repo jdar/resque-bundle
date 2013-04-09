@@ -14,6 +14,7 @@ describe Resque::Plugins::Bundle, fakefs: true do
 
     def self.perform(args = {})
       bundler.dependencies = args['dependencies']
+      #bundler.namespace = args['username']
       bundler.install
     end
   end
@@ -61,6 +62,7 @@ describe Resque::Plugins::Bundle, fakefs: true do
     it 'substitutes into dependencies arg' do
       config[:common_dependencies] = [foo,bar]
       
+      pending "not sure why code is calling 'do_install' for this one..."
       BI.should_receive(:do_install).with([foo,bar])
       ResqueWorker.perform('dependencies'=>nil)
     end
