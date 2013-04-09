@@ -32,6 +32,7 @@ module ResqueBundle
       keys = options.keys
 
       raise ArgumentError.new 'Folder must be supplied' unless keys.include?(:folder)
+      raise Errno::ENOENT.new 'Cache directory does not exist.' unless File.exist?(options[:folder].to_s)
     end
   end
 end

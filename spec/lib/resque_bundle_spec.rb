@@ -8,7 +8,7 @@ describe ResqueBundle do
 
   describe 'checking configured values' do
     it 'raises an error if folder parent does not exist' do
-      expect { Resque.bundler = config }.to raise_error(Errno::ENOENT, "No such file or directory")
+      expect { Resque.bundler = config }.to raise_error(Errno::ENOENT, "Cache directory does not exist.")
     end    
 
     it 'raises an error if folder is not found' do
